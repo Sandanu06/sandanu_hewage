@@ -1,14 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Montserrat } from "next/font/google"
+import { audyno, spaceGrotesk } from "./fonts"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-montserrat",
-})
 
 export const metadata: Metadata = {
   title: "Sandanu Hewage | Portfolio",
@@ -41,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark scroll-smooth" suppressHydrationWarning>
-      <body className={`${montserrat.className} antialiased`} suppressHydrationWarning>
+    <html lang="en" className={`${spaceGrotesk.variable} ${audyno.variable} dark scroll-smooth`} suppressHydrationWarning>
+      <body className="min-h-screen bg-[#121212] text-white font-space-grotesk" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}
         </ThemeProvider>

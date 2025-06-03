@@ -1,6 +1,7 @@
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ExternalLink } from "lucide-react"
+import { ExternalLink, ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 export function Projects() {
   return (
@@ -45,6 +46,17 @@ export function Projects() {
             imageSrc="/dfnc.png?height=200&width=350"
             link="https://dfnc.pemitha.me"
           />
+        </div>
+
+        <div className="mt-12 text-center">
+          <Link href="/projects">
+            <Button
+              variant="outline"
+              className="border-[#3498db] text-[#3498db] hover:bg-[#3498db] hover:text-white px-8 py-3 rounded-md transition-all duration-300"
+            >
+              View More Projects <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

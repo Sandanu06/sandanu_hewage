@@ -33,6 +33,9 @@
     --ring: 201 75% 50%;
 
     --radius: 0.5rem;
+
+    --font-audyno: var(--font-audyno);
+    --font-space-grotesk: var(--font-space-grotesk);
   }
 
   .dark {
@@ -108,4 +111,32 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #2980b9;
+}
+
+@layer components {
+  .font-audyno {
+    font-family: var(--font-audyno);
+  }
+  
+  .font-space-grotesk {
+    font-family: var(--font-space-grotesk);
+  }
+}
+
+@layer utilities {
+  .animate-gradient {
+    animation: gradient 15s ease infinite;
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 }

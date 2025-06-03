@@ -92,3 +92,23 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Animated gradient background */
+.animate-gradient {
+  animation: gradientBG 8s ease-in-out infinite;
+  background-size: 400% 400%;
+}
+@keyframes gradientBG {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Animated glowing border */
+.animate-glow-border {
+  box-shadow: 0 0 32px 8px #3498db80, 0 0 64px 16px #2980b980;
+  animation: glowPulse 2.5s infinite alternate;
+}
+@keyframes glowPulse {
+  0% { box-shadow: 0 0 32px 8px #3498db80, 0 0 64px 16px #2980b980; }
+  100% { box-shadow: 0 0 48px 16px #3498dbcc, 0 0 80px 24px #2980b9cc; }
+}

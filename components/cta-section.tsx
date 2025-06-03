@@ -4,13 +4,22 @@ import type React from "react"
 
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Download, Mail, MessageCircle } from "lucide-react"
+import Link from "next/link"
 
 export function CTASection() {
   const handleDownloadCV = () => {
-    const link = document.createElement("a")
-    link.href = "/cv/sandanu-hewage-cv.pdf" // You'll need to add your actual CV file
-    link.download = "Sandanu_Hewage_CV.pdf"
-    link.click()
+    try {
+      const link = document.createElement("a")
+      link.href = "/Sandanu_Hewage_CV.pdf"
+      link.download = "Sandanu_Hewage_CV.pdf"
+      link.target = "_blank"
+      link.rel = "noopener noreferrer"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (error) {
+      console.error("Error downloading CV:", error)
+    }
   }
 
   const handleContactScroll = () => {
