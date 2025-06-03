@@ -5,6 +5,21 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, Download } from "lucide-react"
 
 export function Hero() {
+  const handleDownloadCV = () => {
+    try {
+      const link = document.createElement("a")
+      link.href = "/Sandanu_Hewage_CV.pdf"
+      link.download = "Sandanu_Hewage_CV.pdf"
+      link.target = "_blank"
+      link.rel = "noopener noreferrer"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (error) {
+      console.error("Error downloading CV:", error)
+    }
+  }
+
   return (
     <section id="home" className="pt-24 pb-16 md:pt-32 md:pb-24">
       <div className="container mx-auto px-4">
@@ -28,13 +43,7 @@ export function Hero() {
               <Button
                 variant="outline"
                 className="border-[#3498db] text-[#3498db] hover:bg-[#3498db] hover:text-white px-6 py-2 rounded-md transition-all duration-300"
-                onClick={() => {
-                  // Create a temporary link to download CV
-                  const link = document.createElement("a")
-                  link.href = "/cv/sandanu-hewage-cv.pdf" // You'll need to add your actual CV file
-                  link.download = "Sandanu_Hewage_CV.pdf"
-                  link.click()
-                }}
+                onClick={handleDownloadCV}
               >
                 Download CV <Download className="ml-2 h-4 w-4" />
               </Button>
