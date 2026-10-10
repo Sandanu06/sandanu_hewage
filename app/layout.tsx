@@ -1,13 +1,13 @@
 import type React from "react"
-import type { Metadata } from "next"
-import { audyno, spaceGrotesk } from "./fonts"
+import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#07070d" }
+
 export const metadata: Metadata = {
   title: "Sandanu Hewage | Portfolio",
-  description: "Entrepreneur, Tech Enthusiast, and Developer",
-  generator: 'v0.dev',
+  description: "Full Stack Developer & AI Researcher. An interactive desktop portfolio.",
   icons: {
     icon: [
       { url: '/favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
@@ -35,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${audyno.variable} dark scroll-smooth`} suppressHydrationWarning>
-      <body className="min-h-screen bg-[#121212] text-white font-space-grotesk" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className="bg-[#07070d] text-white" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}
         </ThemeProvider>

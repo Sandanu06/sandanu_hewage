@@ -81,62 +81,8 @@
   }
 }
 
-/* Custom gradient backgrounds */
-.bg-gradient-dark {
-  background: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+html {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Animation classes */
-.hover-lift {
-  transition: transform 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-5px);
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #1e1e1e;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #3498db;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #2980b9;
-}
-
-@layer components {
-  .font-audyno {
-    font-family: var(--font-audyno);
-  }
-  
-  .font-space-grotesk {
-    font-family: var(--font-space-grotesk);
-  }
-}
-
-@layer utilities {
-  .animate-gradient {
-    animation: gradient 15s ease infinite;
-  }
-
-  @keyframes gradient {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-}
