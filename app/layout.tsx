@@ -6,27 +6,24 @@ import { ThemeProvider } from "@/components/theme-provider"
 export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#07070d" }
 
 export const metadata: Metadata = {
-  title: "Sandanu Hewage | Portfolio",
-  description: "Full Stack Developer & AI Researcher. An interactive desktop portfolio.",
+  metadataBase: new URL(process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000"),
+  title: "Sandanu Hewage | AI Developer",
+  description: "AI Developer. An interactive desktop portfolio: projects, résumé and ways to get in touch.",
+  openGraph: {
+    title: "Sandanu Hewage | AI Developer",
+    description: "An interactive desktop portfolio.",
+    images: [{ url: "/og.png", width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", images: ["/og.png"] },
   icons: {
     icon: [
-      { url: '/favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: "/favicon/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon/favicon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
-    shortcut: '/favicon/favicon.ico',
-    apple: '/favicon/apple-touch-icon.png',
-    other: [
-      {
-        rel: 'android-chrome-192x192',
-        url: '/favicon/android-chrome-192x192.png',
-      },
-      {
-        rel: 'android-chrome-512x512',
-        url: '/favicon/android-chrome-512x512.png',
-      },
-    ],
+    shortcut: "/favicon/favicon.ico",
+    apple: "/favicon/apple-touch-icon.png",
   },
-  manifest: '/favicon/site.webmanifest',
+  manifest: "/favicon/site.webmanifest",
 }
 
 export default function RootLayout({

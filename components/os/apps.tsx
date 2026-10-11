@@ -1,12 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { cn } from "@/lib/utils"
 import Image from "next/image"
-import { ArrowUpRight, Check, Download } from "lucide-react"
-import { me, projects, skills, socials } from "@/lib/data"
+import { Check, Download } from "lucide-react"
+import { dockSocials, me, projects, skills, socials } from "@/lib/data"
+import { SocialIcon } from "./icons"
 
-export type AppId = "about" | "projects" | "terminal" | "mail" | "cv" | "trash" | `project:${string}`
+export type AppId = "about" | "safari" | "projects" | "connect" | "terminal" | "mail" | "cv" | "trash" | `web:${string}`
 
 export function About({ open }: { open: (id: AppId) => void }) {
   return (
@@ -49,33 +49,17 @@ function Btn({ children, ghost, ...p }: React.ButtonHTMLAttributes<HTMLButtonEle
   )
 }
 
-const TABS = ["All", "Teczos", "Personal"] as const
-
 export function Projects({ open }: { open: (id: AppId) => void }) {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("All")
   return (
     <div className="h-full overflow-auto p-4 sm:p-6">
-      <div role="tablist" className="mx-auto mb-5 flex w-fit rounded-full bg-black/5 p-0.5">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={cn("rounded-full px-4 py-1.5 text-sm font-medium transition", tab === t ? "bg-white shadow-sm" : "text-neutral-500")}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5">
-        {projects.filter((p) => tab === "All" || p.group === tab).map((p) => (
-          <button key={p.id} onClick={() => open(`project:${p.id}`)} className="group text-left">
-            <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-neutral-100 shadow-sm ring-1 ring-black/5 transition group-hover:shadow-lg group-active:scale-[.98]">
+        {projects.map((p) => (
+          <button key={p.id} onClick={() => open(`web:${p.link}`)} className="group text-left">
+            <div className="relative aspect-[67/30] overflow-hidden rounded-xl bg-neutral-100 shadow-sm ring-1 ring-black/5 transition group-hover:shadow-lg group-active:scale-[.98]">
               <Image src={p.image} alt={p.title} fill sizes="240px" className="object-cover object-top" />
             </div>
             <div className="mt-2 text-sm font-medium">{p.title}</div>
-            <div className="text-xs text-neutral-500">{[p.group, ...p.tags].join(" · ")}</div>
+            <div className="text-xs text-neutral-500">{p.tags.join(" · ")}</div>
           </button>
         ))}
       </div>
@@ -83,32 +67,18 @@ export function Projects({ open }: { open: (id: AppId) => void }) {
   )
 }
 
-export function ProjectView({ id }: { id: string }) {
-  const p = projects.find((x) => x.id === id)
-  if (!p) return null
+export function Connect({ open }: { open: (id: AppId) => void }) {
   return (
-    <div className="h-full overflow-auto">
-      <div className="relative aspect-[16/8] w-full bg-neutral-100">
-        <Image src={p.image} alt={p.title} fill sizes="720px" className="object-cover object-top" />
-      </div>
-      <div className="space-y-3 p-6">
-        <div className="flex flex-wrap gap-1.5">
-          {p.tags.map((t) => (
-            <span key={t} className="rounded-full bg-black/5 px-2.5 py-0.5 text-xs text-neutral-600">
-              {t}
-            </span>
-          ))}
-        </div>
-        <h2 className="text-xl font-semibold tracking-tight">{p.title}</h2>
-        <p className="text-[15px] leading-relaxed text-neutral-600">{p.description}</p>
-        <a
-          href={p.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 rounded-full bg-[#0a84ff] px-4 py-1.5 text-sm font-medium text-white transition hover:bg-[#0077ed] active:scale-95"
-        >
-          Visit site <ArrowUpRight className="h-4 w-4" />
-        </a>
+    <div className="h-full overflow-auto p-5 sm:p-7">
+      <div className="grid grid-cols-3 gap-x-2 gap-y-6 sm:grid-cols-4">
+        {socials.map((s) => (
+          <button key={s.name} onClick={() => open(`web:${s.href}`)} className="group flex flex-col items-center gap-2 text-center outline-none">
+            <div className="h-14 w-14 shadow-md transition group-hover:scale-110 group-focus-visible:ring-2 group-focus-visible:ring-[#0a84ff] group-active:scale-95 sm:h-16 sm:w-16">
+              <SocialIcon name={s.name} />
+            </div>
+            <span className="text-xs font-medium leading-tight text-neutral-700">{s.name}</span>
+          </button>
+        ))}
       </div>
     </div>
   )
@@ -125,7 +95,7 @@ export function Trash() {
   )
 }
 
-export function Mail() {
+export function Mail({ open }: { open: (id: AppId) => void }) {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle")
   const [error, setError] = useState("")
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -169,10 +139,10 @@ export function Mail() {
       {status === "error" && <p role="alert" className="text-xs text-red-500">{error}</p>}
       <div className="flex items-center justify-between pt-2">
         <div className="flex gap-3 text-xs text-neutral-500">
-          {socials.map((s) => (
-            <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900">
+          {dockSocials.map((s) => (
+            <button key={s.name} type="button" onClick={() => open(`web:${s.href}`)} className="hover:text-neutral-900">
               {s.name}
-            </a>
+            </button>
           ))}
         </div>
         <button
@@ -207,11 +177,13 @@ const run = (cmd: string, open: (id: AppId) => void): string[] => {
     case "":
       return []
     case "help":
-      return ["about  projects  contact  cv  whoami  open <app>  clear"]
+      return ["about  safari  projects  connect  contact  cv  whoami  open <app>  clear"]
     case "whoami":
       return [me.name, me.role]
     case "about":
     case "projects":
+    case "safari":
+    case "connect":
     case "cv":
       open(c)
       return [`opening ${c}…`]
@@ -219,7 +191,7 @@ const run = (cmd: string, open: (id: AppId) => void): string[] => {
       open("mail")
       return ["opening mail…"]
     case "open": {
-      const m = { about: "about", projects: "projects", cv: "cv", mail: "mail", contact: "mail" }[arg as string]
+      const m = { about: "about", projects: "projects", safari: "safari", connect: "connect", cv: "cv", mail: "mail", contact: "mail" }[arg as string]
       if (!m) return [`open: unknown app '${arg ?? ""}'`]
       open(m as AppId)
       return [`opening ${arg}…`]

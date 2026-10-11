@@ -1,4 +1,5 @@
-import { Github, Instagram, Linkedin } from "lucide-react"
+import { Linkedin } from "lucide-react"
+import { siDiscord, siFacebook, siGithub, siGooglecloud, siGoogle, siInstagram, siMedium, siReddit, siSpotify, siSteam, siTelegram, siX, siYoutube, siTailwindcss, siWikipedia, siYcombinator, siApple, siMdnwebdocs, siReact, siHuggingface } from "simple-icons"
 
 // macOS-style app icons, drawn as SVG on a 100x100 grid.
 const Sq = ({ id, from, to, stroke }: { id: string; from: string; to: string; stroke?: string }) => (
@@ -11,31 +12,6 @@ const Sq = ({ id, from, to, stroke }: { id: string; from: string; to: string; st
     </defs>
     <rect x="3" y="3" width="94" height="94" rx="22" fill={`url(#${id})`} stroke={stroke} strokeOpacity=".35" />
   </>
-)
-
-export const FinderIcon = () => (
-  <svg viewBox="0 0 100 100">
-    <defs>
-      <linearGradient id="fn-l" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#62c6fb" />
-        <stop offset="1" stopColor="#2e97ec" />
-      </linearGradient>
-      <linearGradient id="fn-r" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#ffffff" />
-        <stop offset="1" stopColor="#c9e6fd" />
-      </linearGradient>
-      <clipPath id="fn-c">
-        <rect x="3" y="3" width="94" height="94" rx="22" />
-      </clipPath>
-    </defs>
-    <g clipPath="url(#fn-c)">
-      <rect x="3" y="3" width="47" height="94" fill="url(#fn-l)" />
-      <rect x="50" y="3" width="47" height="94" fill="url(#fn-r)" />
-    </g>
-    <path d="M50 3c-3 14-6 30-3 44 1 5 4 9 9 10" fill="none" stroke="#13335c" strokeWidth="3" strokeLinecap="round" />
-    <path d="M33 26v15M67 26v15" stroke="#13335c" strokeWidth="5" strokeLinecap="round" />
-    <path d="M24 64c15 13 37 13 52 0" fill="none" stroke="#13335c" strokeWidth="4.5" strokeLinecap="round" />
-  </svg>
 )
 
 export const FolderIcon = () => (
@@ -53,22 +29,6 @@ export const FolderIcon = () => (
     <path d="M6 22a8 8 0 0 1 8-8h22l8 8h42a8 8 0 0 1 8 8v52a8 8 0 0 1-8 8H14a8 8 0 0 1-8-8Z" fill="url(#fo-b)" />
     <rect x="6" y="32" width="88" height="56" rx="8" fill="url(#fo-f)" />
     <rect x="6" y="32" width="88" height="2" fill="#fff" opacity=".45" />
-  </svg>
-)
-
-export const MailIcon = () => (
-  <svg viewBox="0 0 100 100">
-    <Sq id="ml" from="#6fd0ff" to="#1a73f0" stroke="#fff" />
-    <rect x="21" y="29" width="58" height="42" rx="6" fill="#fff" />
-    <path d="M23 33l27 21 27-21" fill="none" stroke="#2a86f4" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
-export const TerminalIcon = () => (
-  <svg viewBox="0 0 100 100">
-    <Sq id="tm" from="#3a3a3e" to="#0b0b0c" stroke="#fff" />
-    <path d="M26 38l16 12-16 12" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M50 66h24" stroke="#fff" strokeWidth="6" strokeLinecap="round" />
   </svg>
 )
 
@@ -90,33 +50,99 @@ export const PdfFileIcon = () => (
   </svg>
 )
 
-export const TrashIcon = () => (
+type Brand = { bg: string; path?: string }
+const g = (i: { path: string }, bg: string): Brand => ({ bg, path: i.path })
+const BRAND: Record<string, Brand> = {
+  LinkedIn: { bg: "#0a66c2" },
+  GitHub: g(siGithub, "linear-gradient(#2b2b2f,#000)"),
+  Instagram: g(siInstagram, "linear-gradient(45deg,#feda75,#fa7e1e 30%,#d62976 60%,#4f5bd5)"),
+  X: g(siX, "#000"),
+  YouTube: g(siYoutube, "#ff0000"),
+  Facebook: g(siFacebook, "#1877f2"),
+  Telegram: g(siTelegram, "#26a5e4"),
+  Discord: g(siDiscord, "#5865f2"),
+  Medium: g(siMedium, "#000"),
+  Reddit: g(siReddit, "#ff4500"),
+  Spotify: g(siSpotify, "#1db954"),
+  Steam: g(siSteam, "linear-gradient(#1b2838,#0b1118)"),
+  "Google Cloud Skills": g(siGooglecloud, "#4285f4"),
+  "Google Developer": g(siGoogle, "#34a853"),
+  Tailwind: g(siTailwindcss, "#0b1120"),
+  Wikipedia: g(siWikipedia, "#ffffff"),
+  "Hacker News": g(siYcombinator, "#ff6600"),
+  Apple: g(siApple, "#f2f2f4"),
+  MDN: g(siMdnwebdocs, "#0b0b0b"),
+  React: g(siReact, "#14202b"),
+  "Hugging Face": g(siHuggingface, "#ffcc4d"),
+}
+
+export const Img = ({ name }: { name: string }) => <img src={`/dock/${name}.png`} alt="" draggable={false} className="h-full w-full object-contain" />
+
+const LIGHT = new Set(["Wikipedia", "Apple", "Hugging Face"])
+
+export const SocialIcon = ({ name }: { name: string }) => {
+  if (name === "LinkedIn") return <Img name="linkedin" />
+  const b = BRAND[name]
+  return (
+    <div style={{ background: b.bg }} className={`grid h-full w-full place-items-center rounded-[22%] ring-1 ring-white/25 [&>svg]:h-1/2 [&>svg]:w-1/2 ${LIGHT.has(name) ? "text-neutral-900" : name === "Tailwind" ? "text-[#38bdf8]" : name === "React" ? "text-[#61dafb]" : "text-white"}`}>
+      {b.path ? (
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d={b.path} />
+        </svg>
+      ) : (
+        <Linkedin fill="currentColor" strokeWidth={0} />
+      )}
+    </div>
+  )
+}
+
+export const ConnectIcon = () => (
   <svg viewBox="0 0 100 100">
     <defs>
-      <linearGradient id="tr" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stopColor="#f1f4f8" stopOpacity=".95" />
-        <stop offset=".5" stopColor="#cfd6df" stopOpacity=".85" />
-        <stop offset="1" stopColor="#aeb7c3" stopOpacity=".95" />
+      <linearGradient id="cn" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#f2f2f6" />
+        <stop offset="1" stopColor="#b9bac4" />
       </linearGradient>
     </defs>
-    <path d="M22 24h56l-6 64a5 5 0 0 1-5 5H33a5 5 0 0 1-5-5Z" fill="url(#tr)" stroke="#fff" strokeOpacity=".6" />
-    <g stroke="#8a95a3" strokeOpacity=".55" strokeWidth="1.5">
-      <path d="M38 34l2 52M50 34v54M62 34l-2 52" />
-      <path d="M31 48h38M32 62h36M33 76h34" />
-    </g>
-    <ellipse cx="50" cy="24" rx="28" ry="6.5" fill="#f6f8fb" stroke="#aeb7c3" />
-    <ellipse cx="50" cy="24" rx="22" ry="4" fill="#dfe4ea" />
+    <rect x="3" y="3" width="94" height="94" rx="22" fill="url(#cn)" stroke="#fff" strokeOpacity=".6" />
+    {["#ff5f57", "#febc2e", "#28c840", "#0a84ff", "#af52de", "#ff375f", "#30b0c7", "#ff9f0a", "#5e5ce6"].map((c, i) => (
+      <rect key={c} x={22 + (i % 3) * 22} y={22 + Math.floor(i / 3) * 22} width="16" height="16" rx="4.5" fill={c} />
+    ))}
   </svg>
 )
 
-const SOCIAL: Record<string, { bg: string; icon: React.ReactNode }> = {
-  LinkedIn: { bg: "bg-[#0a66c2]", icon: <Linkedin fill="currentColor" strokeWidth={0} /> },
-  GitHub: { bg: "bg-gradient-to-b from-[#2b2b2f] to-black", icon: <Github /> },
-  Instagram: { bg: "bg-gradient-to-tr from-[#feda75] via-[#d62976] to-[#4f5bd5]", icon: <Instagram /> },
-}
+export const SafariIcon = () => (
+  <svg viewBox="0 0 100 100">
+    <defs>
+      <linearGradient id="sf" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#3fd7ff" />
+        <stop offset="1" stopColor="#0a63f2" />
+      </linearGradient>
+      <radialGradient id="sf2" cx="50%" cy="40%" r="60%">
+        <stop offset="0" stopColor="#7be4ff" />
+        <stop offset="1" stopColor="#1b86f5" />
+      </radialGradient>
+    </defs>
+    <rect x="3" y="3" width="94" height="94" rx="22" fill="url(#sf)" />
+    <rect x="3.5" y="3.5" width="93" height="93" rx="21.5" fill="none" stroke="#fff" strokeOpacity=".35" />
+    <circle cx="50" cy="50" r="36" fill="url(#sf2)" stroke="#fff" strokeWidth="3" />
+    {Array.from({ length: 36 }, (_, i) => {
+      const a = (i * 10 * Math.PI) / 180
+      const long = i % 3 === 0
+      const r1 = long ? 30.5 : 32.5
+      const f = (v: number) => +v.toFixed(2)
+      return <line key={i} x1={f(50 + Math.sin(a) * r1)} y1={f(50 - Math.cos(a) * r1)} x2={f(50 + Math.sin(a) * 34)} y2={f(50 - Math.cos(a) * 34)} stroke="#fff" strokeOpacity={long ? 0.95 : 0.6} strokeWidth={long ? 1.6 : 1} />
+    })}
+    <g transform="rotate(45 50 50)">
+      <path d="M50 22 58 50H42Z" fill="#ff3b30" />
+      <path d="M50 78 42 50H58Z" fill="#fff" />
+    </g>
+    <circle cx="50" cy="50" r="2.4" fill="#fff" />
+  </svg>
+)
 
-export const SocialIcon = ({ name }: { name: string }) => (
-  <div className={`grid h-full w-full place-items-center rounded-[22%] text-white ring-1 ring-white/25 [&>svg]:h-1/2 [&>svg]:w-1/2 ${SOCIAL[name].bg}`}>
-    {SOCIAL[name].icon}
-  </div>
+export const AppleLogo = ({ className = "h-[15px] w-[15px] fill-current" }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden>
+    <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
+  </svg>
 )

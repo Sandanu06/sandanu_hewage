@@ -6,39 +6,51 @@ import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type 
 import { BatteryFull, Search, Wifi } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { me, projects, socials } from "@/lib/data"
-import { About, CV, Mail, ProjectView, Projects, Terminal, Trash, type AppId } from "./apps"
-import { PdfFileIcon, FinderIcon, FolderIcon, MailIcon, SocialIcon, TerminalIcon, TrashIcon } from "./icons"
+import { dockSocials, me, projects, socials, webInfo } from "@/lib/data"
+import { About, Connect, CV, Mail, Projects, Terminal, Trash, type AppId } from "./apps"
+import { Browser } from "./browser"
+import { AppleLogo, ConnectIcon, FolderIcon, Img, PdfFileIcon, SafariIcon, SocialIcon } from "./icons"
+import { Boot } from "./boot"
 import { Window, type Win } from "./window"
 
 const APPS: Record<string, { title: string; w: number; h: number; icon: React.ReactNode }> = {
-  about: { title: "About Me", w: 460, h: 580, icon: <FinderIcon /> },
+  about: { title: "About Me", w: 460, h: 580, icon: <Img name="finder" /> },
   projects: { title: "Projects", w: 720, h: 480, icon: <FolderIcon /> },
-  terminal: { title: "Terminal", w: 560, h: 360, icon: <TerminalIcon /> },
-  mail: { title: "New Message", w: 500, h: 440, icon: <MailIcon /> },
+  safari: { title: "Safari", w: 1040, h: 680, icon: <SafariIcon /> },
+  connect: { title: "Connect", w: 560, h: 540, icon: <ConnectIcon /> },
+  terminal: { title: "Terminal", w: 560, h: 360, icon: <Img name="terminal" /> },
+  mail: { title: "New Message", w: 500, h: 440, icon: <Img name="mail" /> },
   cv: { title: "CV-Sandanu_Hewage.pdf", w: 620, h: 640, icon: <PdfFileIcon /> },
-  trash: { title: "Trash", w: 360, h: 240, icon: <TrashIcon /> },
+  trash: { title: "Trash", w: 360, h: 240, icon: <Img name="trash" /> },
 }
-const DOCK: AppId[] = ["about", "projects", "terminal", "mail"]
+const DOCK: AppId[] = ["about", "safari", "projects", "terminal", "mail", "connect"]
 
 // what macOS would call the frontmost app for each window
 const appName = (id?: string) =>
-  !id ? "Finder" : id.startsWith("project:") ? "Safari" : ({ terminal: "Terminal", mail: "Mail", cv: "Preview" } as Record<string, string>)[id] ?? "Finder"
+  !id ? "Finder" : id.startsWith("web:") || id === "safari" ? "Safari" : ({ terminal: "Terminal", mail: "Mail", cv: "Preview" } as Record<string, string>)[id] ?? "Finder"
 
-const spec = (id: AppId) => {
-  if (id.startsWith("project:")) {
-    const p = projects.find((x) => x.id === id.slice(8))!
-    return { title: p.title, w: 640, h: 520 }
-  }
-  return APPS[id]
+const spec = (id: AppId) => (id.startsWith("web:") ? { title: webInfo(id.slice(4)).title, w: 900, h: 620 } : APPS[id])
+
+// window.innerWidth/innerHeight, kept in state so maximized windows follow resizes
+function useArea() {
+  const [area, setArea] = useState({ w: 0, h: 0 })
+  useEffect(() => {
+    const f = () => setArea({ w: innerWidth, h: innerHeight })
+    f()
+    addEventListener("resize", f)
+    return () => removeEventListener("resize", f)
+  }, [])
+  return area
 }
 
 export function Desktop() {
   const mobile = useIsMobile()
   const [wins, setWins] = useState<Win[]>([]) // order = z-order, last is front
   const [spot, setSpot] = useState(false)
+  const area = useArea()
   const root = useRef<HTMLElement>(null)
   const [toast, setToast] = useState("")
+  const [ctx, setCtx] = useState<{ x: number; y: number } | null>(null)
 
   const open = useCallback((id: AppId) => {
     setWins((ws) => {
@@ -65,7 +77,10 @@ export function Desktop() {
         e.preventDefault()
         setSpot((s) => !s)
       }
-      if (e.key === "Escape") setSpot(false)
+      if (e.key === "Escape") {
+        setSpot(false)
+        setCtx(null)
+      }
     }
     addEventListener("keydown", k)
     return () => removeEventListener("keydown", k)
@@ -108,29 +123,53 @@ export function Desktop() {
   ]
   const apple: Item[] = [
     { label: "About This Portfolio", run: () => open("about") },
+    { label: "Safari", run: () => open("safari") },
     { label: "Projects", run: () => open("projects") },
+    { label: "Connect", run: () => open("connect") },
     { label: "Résumé…", run: () => open("cv") },
     "-",
     { label: "Contact…", run: () => open("mail") },
   ]
 
+  const ctxItems: Item[] = [
+    { label: "New Message", run: () => open("mail") },
+    { label: "Open Terminal", run: () => open("terminal") },
+    { label: "Get Info", run: () => open("about") },
+    "-",
+    { label: "Show Résumé", run: () => open("cv") },
+    { label: "Connect", run: () => open("connect") },
+    "-",
+    { label: "Search…", hint: "⌘K", run: () => setSpot(true) },
+  ]
+
   const render = (id: string) => {
-    if (id.startsWith("project:")) return <ProjectView id={id.slice(8)} />
+    if (id.startsWith("web:")) return <Browser initial={id.slice(4)} />
     switch (id) {
       case "about": return <About open={open} />
       case "projects": return <Projects open={open} />
+      case "safari": return <Browser initial={null} />
+      case "connect": return <Connect open={open} />
       case "trash": return <Trash />
       case "terminal": return <Terminal open={open} />
-      case "mail": return <Mail />
+      case "mail": return <Mail open={open} />
       case "cv": return <CV />
     }
   }
 
   return (
-    <main ref={root} className="fixed inset-0 select-none overflow-hidden bg-[#07070d]">
+    <main
+      ref={root}
+      className="fixed inset-0 select-none overflow-hidden bg-[#07070d]"
+      onContextMenu={(e) => {
+        if ((e.target as HTMLElement).closest("[role=dialog],nav,header,button,a,input,textarea")) return
+        e.preventDefault()
+        setCtx({ x: Math.min(e.clientX, innerWidth - 220), y: Math.min(e.clientY, innerHeight - 230) })
+      }}
+    >
+      <Boot />
       <Wallpaper />
       <MenuBar menus={menus} apple={apple} onSearch={() => setSpot(true)} />
-      <DesktopFile mobile={mobile} onOpen={() => open("cv")} />
+      <DesktopIcons mobile={mobile} bounds={root} open={open} />
 
       <div className="pointer-events-none absolute inset-x-0 bottom-[calc(7.5rem+env(safe-area-inset-bottom))] px-6 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:px-16">
         <h1 className="text-[clamp(2.75rem,7vw,6.5rem)] font-semibold leading-[.95] tracking-tighter text-white">
@@ -140,10 +179,10 @@ export function Desktop() {
         </h1>
         <p className="mt-4 text-sm text-white/70 lg:text-base">{me.role}</p>
         <div className="pointer-events-auto mt-5 flex gap-3 md:hidden">
-          {socials.map((s) => (
-            <a key={s.name} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.name} className="h-11 w-11 transition active:scale-90">
+          {dockSocials.map((s) => (
+            <button key={s.name} onClick={() => open(`web:${s.href}`)} aria-label={s.name} className="h-11 w-11 transition active:scale-90">
               <SocialIcon name={s.name} />
-            </a>
+            </button>
           ))}
         </div>
       </div>
@@ -155,7 +194,9 @@ export function Desktop() {
           z={10 + i}
           focused={front?.id === w.id}
           mobile={mobile}
+          unified={w.id === "safari" || w.id.startsWith("web:")}
           bounds={root}
+          area={area}
           onFocus={() => focus(w.id)}
           onClose={() => setWins((ws) => ws.filter((x) => x.id !== w.id))}
           onMin={() => patch(w.id, { min: true })}
@@ -172,7 +213,13 @@ export function Desktop() {
           </motion.div>
         )}
       </AnimatePresence>
-      <Dock wins={wins} open={open} base={mobile ? 46 : 48} />
+      <Dock wins={wins} open={open} base={mobile ? 40 : 48} />
+      {ctx && (
+        <>
+          <div className="fixed inset-0 z-[89]" onPointerDown={() => setCtx(null)} onContextMenu={(e) => { e.preventDefault(); setCtx(null) }} />
+          <Dropdown items={ctxItems} onPick={() => setCtx(null)} className="fixed z-[90] mt-0 w-52" style={{ left: ctx.x, top: ctx.y }} />
+        </>
+      )}
       <AnimatePresence>{spot && <Spotlight close={() => setSpot(false)} open={open} />}</AnimatePresence>
     </main>
   )
@@ -200,17 +247,11 @@ function Clock() {
   return <span suppressHydrationWarning>{t}</span>
 }
 
-const AppleLogo = () => (
-  <svg viewBox="0 0 24 24" className="h-[15px] w-[15px] fill-current" aria-hidden>
-    <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
-  </svg>
-)
-
 type Item = { label: string; run?: () => void; hint?: string } | "-"
 
-function Dropdown({ items, onPick, className }: { items: Item[]; onPick: () => void; className?: string }) {
+function Dropdown({ items, onPick, className, style }: { items: Item[]; onPick: () => void; className?: string; style?: React.CSSProperties }) {
   return (
-    <div role="menu" className={cn("absolute top-full z-[70] mt-1 flex min-w-52 flex-col rounded-lg bg-neutral-800/85 p-1 text-[13px] shadow-2xl ring-1 ring-white/15 backdrop-blur-2xl", className)}>
+    <div role="menu" style={style} className={cn("absolute top-full z-[70] mt-1 flex min-w-52 flex-col rounded-lg bg-neutral-800/85 p-1 text-[13px] shadow-2xl ring-1 ring-white/15 backdrop-blur-2xl", className)}>
       {items.map((it, i) =>
         it === "-" ? (
           <hr key={i} className="my-1 border-white/15" />
@@ -271,29 +312,58 @@ function MenuBar({ menus, apple, onSearch }: { menus: [string, Item[]][]; apple:
   )
 }
 
-function DesktopFile({ mobile, onOpen }: { mobile: boolean; onOpen: () => void }) {
+function DesktopIcon({ label, onOpen, mobile, bounds, children }: { label: string; onOpen: () => void; mobile: boolean; bounds: React.RefObject<HTMLElement | null>; children: React.ReactNode }) {
   const [sel, setSel] = useState(false)
   return (
-    <button
-      onClick={() => (mobile ? onOpen() : setSel(true))}
+    <motion.button
+      drag={!mobile}
+      dragMomentum={false}
+      dragConstraints={bounds}
+      dragElastic={0}
+      whileDrag={{ scale: 1.04, zIndex: 5 }}
+      onPointerDown={() => setSel(true)}
+      onClick={() => mobile && onOpen()}
       onDoubleClick={onOpen}
       onKeyDown={(e) => e.key === "Enter" && onOpen()}
       onBlur={() => setSel(false)}
-      className="absolute right-3 top-[calc(2.5rem+env(safe-area-inset-top))] z-[1] flex w-24 flex-col items-center gap-1 rounded-lg p-1 outline-none"
+      className="flex w-24 flex-col items-center gap-1 rounded-lg p-1 outline-none"
     >
-      <div className={cn("h-[60px] w-[60px] rounded-lg p-1 drop-shadow-lg", sel && "bg-white/20")}>
-        <PdfFileIcon />
+      <div className={cn("h-[60px] w-[60px] rounded-lg p-1 drop-shadow-lg", sel && "bg-white/20")}>{children}</div>
+      <span className={cn("rounded px-1.5 py-px text-center text-[11px] font-medium leading-tight text-white [overflow-wrap:anywhere] [text-shadow:0_1px_4px_rgba(0,0,0,.5)]", sel && "bg-[#0a60d8] [text-shadow:none]")}>{label}</span>
+    </motion.button>
+  )
+}
+
+// macOS-style desktop: files stack down the right edge, Trash sits bottom right
+function DesktopIcons({ mobile, bounds, open }: { mobile: boolean; bounds: React.RefObject<HTMLElement | null>; open: (id: AppId) => void }) {
+  const p = (id: string) => projects.find((x) => x.id === id)!
+  const icon = { mobile, bounds }
+  return (
+    <>
+      <div className="absolute right-2 top-[calc(2.25rem+env(safe-area-inset-top))] z-[1] flex flex-col items-center gap-1">
+        {["teczos", "one"].map((id) => (
+          <DesktopIcon key={id} label={p(id).title} onOpen={() => open(`web:${p(id).link}`)} {...icon}>
+            <Img name={id === "one" ? "teczos-one" : "teczos"} />
+          </DesktopIcon>
+        ))}
+        <DesktopIcon label="CV-Sandanu_Hewage.pdf" onOpen={() => open("cv")} {...icon}>
+          <PdfFileIcon />
+        </DesktopIcon>
       </div>
-      <span className={cn("rounded px-1.5 py-px text-center text-[11px] font-medium leading-tight text-white [overflow-wrap:anywhere] [text-shadow:0_1px_4px_rgba(0,0,0,.5)]", sel && "bg-[#0a60d8] [text-shadow:none]")}>
-        CV-Sandanu_Hewage.pdf
-      </span>
-    </button>
+      <div className="absolute bottom-28 right-2 z-[1] hidden md:block">
+        <DesktopIcon label="Trash" onOpen={() => open("trash")} {...icon}>
+          <Img name="trash" />
+        </DesktopIcon>
+      </div>
+    </>
   )
 }
 
 function Dock({ wins, open, base }: { wins: Win[]; open: (id: AppId) => void; base: number }) {
   const mx = useMotionValue(Infinity)
   const sep = <span className="mx-1 h-10 w-px self-center bg-white/25" />
+  // minimized windows that have no permanent dock icon get a temporary one, like macOS
+  const minimized = wins.filter((w) => w.min && !DOCK.includes(w.id as AppId) && w.id !== "trash" && !dockSocials.some((d) => w.id === `web:${d.href}`))
   return (
     <nav
       onPointerMove={(e) => e.pointerType === "mouse" && mx.set(e.clientX)}
@@ -307,13 +377,19 @@ function Dock({ wins, open, base }: { wins: Win[]; open: (id: AppId) => void; ba
       ))}
       <span className="hidden md:contents">
         {sep}
-        {socials.map((s) => (
-          <DockIcon key={s.name} base={base} mx={mx} label={s.name} href={s.href}>
+        {dockSocials.map((s) => (
+          <DockIcon key={s.name} base={base} mx={mx} label={s.name} onClick={() => open(`web:${s.href}`)} running={wins.some((w) => w.id === `web:${s.href}`)}>
             <SocialIcon name={s.name} />
           </DockIcon>
         ))}
       </span>
       {sep}
+      {minimized.map((w) => (
+        <DockIcon key={w.id} base={base} mx={mx} label={w.title} onClick={() => open(w.id as AppId)} running>
+          {APPS[w.id]?.icon ?? <SafariIcon />}
+        </DockIcon>
+      ))}
+      {minimized.length > 0 && sep}
       <DockIcon base={base} mx={mx} label="Trash" running={wins.some((w) => w.id === "trash")} onClick={() => open("trash")}>
         {APPS.trash.icon}
       </DockIcon>
@@ -348,7 +424,7 @@ function DockIcon({ base, mx, label, running, onClick, href, children }: { base:
         {...(href ? ({ href, target: "_blank", rel: "noopener noreferrer" } as object) : {})}
         style={{ width: size, height: size }}
         whileTap={{ scale: 0.88 }}
-        className="block drop-shadow-lg [&>div]:rounded-[22%] [&>svg]:h-full [&>svg]:w-full"
+        className="block drop-shadow-lg [&>div]:rounded-[22%] [&>svg]:h-full [&>svg]:w-full [&>img]:h-full [&>img]:w-full"
       >
         {children}
       </Tag>
@@ -363,8 +439,8 @@ function Spotlight({ close, open }: { close: () => void; open: (id: AppId) => vo
   const items = useMemo(() => {
     const all = [
       ...[...DOCK, "cv" as AppId].map((id) => ({ label: APPS[id].title.replace(/\.pdf$/, ""), kind: "App", go: () => open(id) })),
-      ...projects.map((p) => ({ label: p.title, kind: "Project", go: () => open(`project:${p.id}`) })),
-      ...socials.map((s) => ({ label: s.name, kind: "Link", go: () => window.open(s.href, "_blank", "noopener") })),
+      ...projects.map((p) => ({ label: p.title, kind: "Project", go: () => open(`web:${p.link}`) })),
+      ...socials.map((s) => ({ label: s.name, kind: "Link", go: () => open(`web:${s.href}`) })),
     ]
     return all.filter((x) => x.label.toLowerCase().includes(q.toLowerCase())).slice(0, 7)
   }, [q, open])
